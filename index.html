@@ -1,0 +1,178 @@
+<html>
+<head>
+    <title>Sorteio Connect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .rating i {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        .rating i.selected {
+            color: #ffcc00;
+        }
+        .terms {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inscreva-se</h1>
+        <form id="sorteioForm">
+            <label for="name">Qual seu nome?</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="whatsapp">Qual seu WhatsApp? (com DDD)</label>
+            <input type="text" id="whatsapp" name="whatsapp" pattern="\d{10,11}" title="Digite um número válido com DDD. Ex: 33992778178" required>
+            
+            <label for="product">Qual produto você comprou?</label>
+            <select id="product" name="product" required>
+                <option value="">Selecione um produto</option>
+                <option value="netflix">Netflix</option>
+                <option value="icloud">ICloud</option>
+                <option value="tinder">Tinder</option>
+                <option value="spotify">Spotify</option>
+            </select>
+            
+            <label>Qual seu nível de satisfação com o atendimento?</label>
+            <p>Dê sua opinião</p>
+            <div class="rating">
+                <i class="far fa-star" data-value="1"></i>
+                <i class="far fa-star" data-value="2"></i>
+                <i class="far fa-star" data-value="3"></i>
+                <i class="far fa-star" data-value="4"></i>
+                <i class="far fa-star" data-value="5"></i>
+            </div>
+            
+            <p class="terms">Ao continuar, você concorda com os <a href="https://telegra.ph/Termos-de-Participação-do-Programa-de-Sorteios-da-Connect-09-18" target="_blank">termos de participação</a> do programa de sorteios da Connect.</p>
+           
+            <button type="submit" class="submit-btn">Me inscrever na campanha</button>
+        </form>
+    </div>
+
+    <script>
+        // Função para selecionar as estrelas
+        const stars = document.querySelectorAll('.rating i');
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const ratingValue = this.getAttribute('data-value');
+                stars.forEach((s, index) => {
+                    if (index < ratingValue) {
+                        s.classList.add('selected');
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('selected');
+                        s.classList.add('far');
+                        s.classList.remove('fas');
+                    }
+                });
+            });
+        });
+
+        // Função para enviar dados ao Telegram
+        document.getElementById('sorteioForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Capturando os dados do formulário
+            const name = document.getElementById('name').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const product = document.getElementById('product').value;
+            
+            // Calculando o dia de alerta (3 dias antes do acesso)
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() - 3);
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Janeiro é 0!
+            const alertDay = `${day}`;
+
+            // Preparando a mensagem para enviar ao Telegram
+            const message = `Nome: ${name}\nWhatsApp: ${whatsapp}\nProduto: ${product}\nDia de alerta: ${alertDay}`;
+            const botAPI = '7545115815:AAH3stNlXkfuDTu4TQH0e4CZb09Amx57oQw';
+            const chatId = '@toncoin_brasil_chat';
+
+            // Enviando a mensagem via BotAPI do Telegram
+            fetch(`https://api.telegram.org/bot${botAPI}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    alert(' Parabéns! Você agora está participando dos sorteios mensais da Connect Store!');
+                } else {
+                    alert('Não foi possível finalizar o seu registro na promoção.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar a mensagem:', error);
+                alert('Erro ao enviar a mensagem.');
+            });
+        });
+    </script>
+</body>
+</html>
